@@ -1,13 +1,13 @@
-// Importar dependencias
+// Import dependencies
 require('dotenv').config();
 const { HederaAgentKit, createHederaTools } = require('hedera-agent-kit');
 const { PrivateKey, TokenId, TopicId } = require('@hashgraph/sdk');
 
-// Obtener la clave pública de la clave privada
+// Get the public key from the private key
 const privateKeyObject = PrivateKey.fromString(process.env.HEDERA_PRIVATE_KEY);
 const publicKeyDer = privateKeyObject.publicKey.toStringDer();
 
-// Crear instancia del agente Hedera
+// Create Hedera agent instance
 const hederaAgent = new HederaAgentKit(
   process.env.HEDERA_ACCOUNT_ID,
   process.env.HEDERA_PRIVATE_KEY,
@@ -15,72 +15,72 @@ const hederaAgent = new HederaAgentKit(
   process.env.HEDERA_NETWORK
 );
 
-// Función principal para demostrar varias operaciones
-async function ejemploOperaciones() {
+// Main function to demonstrate various operations
+async function runExamples() {
   try {
-    console.log("=== Información de la cuenta ===");
-    // Obtener balance de HBAR
+    console.log("=== Account Information ===");
+    // Get HBAR balance
     const balance = await hederaAgent.getHbarBalance();
-    console.log('Balance de HBAR:', balance);
+    console.log('HBAR Balance:', balance);
 
-    // Obtener todos los tokens
-    console.log("\n=== Tokens de la cuenta ===");
+    // Get all tokens
+    console.log("\n=== Account Tokens ===");
     const tokensBalance = await hederaAgent.getAllTokensBalances(process.env.HEDERA_NETWORK);
-    console.log('Balances de tokens:', tokensBalance);
+    console.log('Token Balances:', tokensBalance);
 
-    // Crear un nuevo token fungible
-    console.log("\n=== Creación de token fungible ===");
-    console.log("Creando token fungible...");
+    // Create a new fungible token
+    console.log("\n=== Creating Fungible Token ===");
+    console.log("Creating fungible token...");
     const createTokenResult = await hederaAgent.createFT({
-      name: "Ejemplo Token",
-      symbol: "EJMP",
+      name: "Example Token",
+      symbol: "EXMP",
       decimals: 2,
       initialSupply: 1000,
       maxSupply: 10000,
-      memo: "Token creado con Hedera Agent Kit"
+      memo: "Token created with Hedera Agent Kit"
     });
-    console.log("Token creado:", createTokenResult);
+    console.log("Token created:", createTokenResult);
     
-    // Si se creó exitosamente el token, realizar más operaciones
+    // If token was created successfully, perform more operations
     if (createTokenResult.status) {
       const tokenId = createTokenResult.tokenId;
       console.log(`Token ID: ${tokenId}`);
       
-      // Esperar un momento para que el token se propague
+      // Wait a moment for the token to propagate
       await new Promise(resolve => setTimeout(resolve, 5000));
       
-      // Obtener detalles del token
-      console.log("\n=== Detalles del token ===");
+      // Get token details
+      console.log("\n=== Token Details ===");
       const tokenDetails = await hederaAgent.getHtsTokenDetails(tokenId.toString(), process.env.HEDERA_NETWORK);
-      console.log("Detalles del token:", tokenDetails);
+      console.log("Token details:", tokenDetails);
       
-      // Crear un tema de HCS
-      console.log("\n=== Creación de tema HCS ===");
-      const topicResult = await hederaAgent.createTopic("Mi tema de ejemplo", true);
-      console.log("Tema creado:", topicResult);
+      // Create an HCS topic
+      console.log("\n=== Creating HCS Topic ===");
+      const topicResult = await hederaAgent.createTopic("My example topic", true);
+      console.log("Topic created:", topicResult);
       
       if (topicResult.status) {
         const topicId = topicResult.topicId;
         console.log(`Topic ID: ${topicId}`);
         
-        // Enviar mensaje al tema
-        console.log("\n=== Envío de mensaje al tema ===");
+        // Send message to the topic
+        console.log("\n=== Sending Message to Topic ===");
         const messageResult = await hederaAgent.submitTopicMessage(
           TopicId.fromString(topicId), 
-          "Hola, este es un mensaje de prueba!"
+          "Hello, this is a test message!"
         );
-        console.log("Mensaje enviado:", messageResult);
+        console.log("Message sent:", messageResult);
         
-        // Esperar un momento para que el mensaje se procese
+        // Wait a moment for the message to be processed
         await new Promise(resolve => setTimeout(resolve, 5000));
         
-        // Obtener mensajes del tema
-        console.log("\n=== Mensajes del tema ===");
+        // Get messages from the topic
+        console.log("\n=== Topic Messages ===");
         const messages = await hederaAgent.getTopicMessages(
           TopicId.fromString(topicId), 
           process.env.HEDERA_NETWORK
         );
-        console.log("Mensajes:", messages);
+        console.log("Messages:", messages);
       }
     }
     
@@ -89,5 +89,5 @@ async function ejemploOperaciones() {
   }
 }
 
-// Ejecutar el ejemplo
-ejemploOperaciones(); 
+// Run the example
+runExamples(); 
