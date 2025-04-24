@@ -3,6 +3,52 @@ import { CreateTokenOptions } from "../tools/transactions/strategies";
 
 export type HederaNetworkType = "mainnet" | "testnet" | "previewnet";
 
+// SaucerSwap Types
+export type SaucerSwapPoolConversionRate = {
+    id: number;
+    poolId: number;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    avg: number;
+    volume: string;
+    liquidity: string;
+    volumeUsd: string;
+    liquidityUsd: string;
+    timestampSeconds: number;
+    startTimestampSeconds: number;
+};
+
+export type SaucerSwapPool = {
+    id: number;
+    contractId: string;
+    lpToken: {
+        id: string;
+        name: string;
+        symbol: string;
+        decimals: number;
+        priceUsd: number;
+    };
+    lpTokenReserve: string;
+    tokenA: {
+        id: string;
+        name: string;
+        symbol: string;
+        decimals: number;
+        priceUsd: number;
+    };
+    tokenReserveA: string;
+    tokenB: {
+        id: string;
+        name: string;
+        symbol: string;
+        decimals: number;
+        priceUsd: number;
+    };
+    tokenReserveB: string;
+};
+
 export type TokenBalance = {
     account: string;
     balance: number;
@@ -183,4 +229,8 @@ export enum AgentKitActionName {
     TRANSFER_HBAR_NON_CUSTODIAL = 'transferHbarNonCustodial',
     ASSET_ALLOWANCE_CUSTODIAL = 'assetAllowedCustodial',
     ASSET_ALLOWANCE_NON_CUSTODIAL = 'assetAllowedNonCustodial',
+    GET_SAUCESWAP_POOL_RATES_CUSTODIAL = 'getSauceSwapPoolRatesCustodial',
+    GET_SAUCESWAP_POOL_RATES_NON_CUSTODIAL = 'getSauceSwapPoolRatesNonCustodial',
+    GET_SAUCESWAP_POOLS_CUSTODIAL = 'getSauceSwapPoolsCustodial',
+    GET_SAUCESWAP_POOLS_NON_CUSTODIAL = 'getSauceSwapPoolsNonCustodial',
 }
