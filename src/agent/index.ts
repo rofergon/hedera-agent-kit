@@ -15,8 +15,10 @@ import {
     HCSMessage,
     HederaNetworkType,
     HtsTokenDetails,
+    SaucerSwapPoolConversionRate,
     TokenBalance,
     TopicInfoApiResponse,
+    SaucerSwapPool,
 } from "../types";
 import { HcsTransactionBuilder } from "../tools/transactions/builders";
 import { HtsTransactionBuilder } from "../tools/transactions/builders";
@@ -790,6 +792,66 @@ export class HederaAgentKit {
         return get_topic_messages(topicId, networkType, lowerTimestamp, upperTimestamp);
     }
 
+
+    /**
+     * Gets the conversion rates for a SaucerSwap pool
+     * @param poolId The ID of the pool to get rates for
+     * @param interval The time interval (FIVEMIN, HOUR, DAY, WEEK)
+     * @param inverted Whether to invert the conversion rate
+     * @returns The pool conversion rate data
+     */
+    async getSauceSwapPoolRates(
+        poolId: string | number,
+        interval: string = 'HOUR',
+        inverted: boolean = false
+    ): Promise<SaucerSwapPoolConversionRate> {
+        const baseUrl = "https://api.saucerswap.finance";
+        const endpoint = `/pools/conversionRates/latest/${poolId}`;
+        
+        // Build URL with query parameters
+        const queryParams = new URLSearchParams();
+        queryParams.append("interval", interval);
+        if (inverted) {
+            queryParams.append("inverted", "true");
+        }
+        
+        const url = `${baseUrl}${endpoint}?${queryParams.toString()}`;
+        
+        try {
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`Error fetching pool conversion rates: ${response.status} - ${response.statusText}`);
+            }
+            
+            return await response.json() as SaucerSwapPoolConversionRate;
+        } catch (error: any) {
+            throw new Error(`Failed to get SaucerSwap pool rates: ${error.message}`);
+        }
+    }
+
+    /**
+     * Gets all available pools from SaucerSwap
+     * @returns Array of SaucerSwap pool data
+     */
+    async getSauceSwapPools(): Promise<SaucerSwapPool[]> {
+        const baseUrl = "https://api.saucerswap.finance";
+        const endpoint = "/pools";
+        
+        const url = `${baseUrl}${endpoint}`;
+        
+        try {
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`Error fetching pools: ${response.status} - ${response.statusText}`);
+            }
+            
+            return await response.json() as SaucerSwapPool[];
+        } catch (error: any) {
+            throw new Error(`Failed to get SaucerSwap pools: ${error.message}`);
+        }
+    }
 
     async approveAssetAllowance(
         spenderAccount: AccountId | string,
