@@ -3,3 +3,6 @@ node_modules/
 .env*
 
 dist/
+
+# Ignore .mdc files in .cursor/rules
+.cursor/rules/*.mdc
