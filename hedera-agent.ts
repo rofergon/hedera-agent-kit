@@ -5,7 +5,8 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 // Import dependencies
-import { HederaAgentKit, createHederaTools } from 'hedera-agent-kit';
+import HederaAgentKit from './src/agent';
+import { createHederaTools } from './src/langchain';
 import { PrivateKey } from '@hashgraph/sdk';
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
@@ -38,7 +39,14 @@ const hederaAgent = new HederaAgentKit(
 );
 
 // Get Hedera tools
+console.log("Calling createHederaTools...");
 const hederaTools = createHederaTools(hederaAgent);
+
+// Debug: List all available tools with their names
+console.log("Available tools:");
+hederaTools.forEach(tool => {
+  console.log(`- ${tool.name}`);
+});
 
 // Create custom tool node that forces custodial mode through config
 class CustomToolNode extends ToolNode {
@@ -62,12 +70,28 @@ class CustomToolNode extends ToolNode {
         const toolCall = toolCalls[i];
         if (toolCall.function) {
           console.log(`Setting up custodial mode for tool call: ${toolCall.function.name}`);
+          console.log(`Tool arguments: ${toolCall.function.arguments}`);
         }
       }
     }
     
-    // Call the original invoke method with the new config
-    return super.invoke(state, newConfig);
+    try {
+      // Call the original invoke method with the new config
+      const result = await super.invoke(state, newConfig);
+      console.log("Tool execution result:", JSON.stringify(result));
+      return result;
+    } catch (error: any) {
+      console.error("Error executing tool:", error);
+      // Return an error message that can be shown to the user
+      return {
+        messages: [
+          {
+            content: `Error: Could not execute the requested tool. ${error.message || 'Unknown error'}`,
+            tool_call_id: lastMessage.additional_kwargs?.tool_calls?.[0]?.id
+          }
+        ]
+      };
+    }
   }
 }
 
@@ -81,12 +105,19 @@ You have access to the following Hedera tools:
 - HBAR tools: Check balance, transfer HBAR
 - HTS (Hedera Token Service) tools: Create tokens, check balances, transfer tokens, etc.
 - HCS (Hedera Consensus Service) tools: Create topics, submit messages, get info, etc.
+- SaucerSwap tools: 
+  - Get pool conversion rates using the sauceswap_get_pool_conversion_rate tool
+  - Get all available pools using the sauceswap_get_pools tool
 
 IMPORTANT: For transactions that modify state (transfers, token creation, etc.):
 1. BEFORE executing any transaction, clearly explain what the transaction will do and ask the user for confirmation.
 2. Only proceed with the transaction if the user explicitly approves.
 3. For token operations, always provide details about the token created, transferred, or modified.
 4. After a transaction is executed, always provide the transaction ID and status.
+
+For SaucerSwap queries:
+- To get pool conversion rates, use the sauceswap_get_pool_conversion_rate tool with a poolId parameter
+- To get all available pools, use the sauceswap_get_pools tool (requires no parameters)
 
 For general questions about Hedera, provide helpful information.
 Keep your responses concise and focused on completing the requested task.
