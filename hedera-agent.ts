@@ -107,7 +107,7 @@ You have access to the following Hedera tools:
 - HCS (Hedera Consensus Service) tools: Create topics, submit messages, get info, etc.
 - SaucerSwap tools: 
   - Get pool conversion rates using the sauceswap_get_pool_conversion_rate tool
-  - Get all available pools using the sauceswap_get_pools tool
+  - Get all available pools using the sauceswap_get_pools tool (supports pagination)
 
 IMPORTANT: For transactions that modify state (transfers, token creation, etc.):
 1. BEFORE executing any transaction, clearly explain what the transaction will do and ask the user for confirmation.
@@ -117,7 +117,15 @@ IMPORTANT: For transactions that modify state (transfers, token creation, etc.):
 
 For SaucerSwap queries:
 - To get pool conversion rates, use the sauceswap_get_pool_conversion_rate tool with a poolId parameter
-- To get all available pools, use the sauceswap_get_pools tool (requires no parameters)
+- To get all available pools, use the sauceswap_get_pools tool with pagination to avoid token limitations:
+  - Use page and pageSize parameters to control how many results you get (e.g., page=1, pageSize=5)
+  - Use filter parameter to filter pools by token symbol (e.g., filter="HBAR" for HBAR pools only)
+  - IMPORTANT: When showing pool results, ALWAYS include the pagination information:
+    - Tell the user which page they're viewing and the total number of pages
+    - Specify how many total pools exist and how many are being shown
+    - If more pages exist, explicitly tell the user how to request the next page
+    - Use the pagination.paginationSummary and pagination.navigationGuide fields from the response
+  - Example response format: "Showing pools 1-5 of 50 total pools (page 1 of 10). There are 9 more pages available. To see more pools, request page 2."
 
 For general questions about Hedera, provide helpful information.
 Keep your responses concise and focused on completing the requested task.
@@ -127,8 +135,8 @@ Account ID: ${process.env.HEDERA_ACCOUNT_ID}`
 
 // Create a model and give it access to the tools
 const model = new ChatOpenAI({
-  modelName: "gpt-4", // You can change this to a different model
-  temperature: 0,
+  modelName: "o4-mini", // You can change this to a different model
+  temperature: 1,
 }).bindTools(hederaTools);
 
 // Define the function that determines whether to continue or not
