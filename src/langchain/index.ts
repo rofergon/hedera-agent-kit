@@ -22,12 +22,20 @@ import { HederaRejectTokenTool } from "./tools/hts/reject_token_tool";
 import { HederaTransferHbarTool } from "./tools/hts/transfer_native_hbar_token_tool";
 import { HederaTransferTokenTool } from "./tools/hts/transfer_token_tool";
 import { HederaDissociateTokenTool } from "./tools/hts/dissociate_token_tool";
+import { SauceSwapPoolConversionRatesTool } from "./tools/sauceswap/get_pool_conversion_rates_tool";
+import { SauceSwapPoolsTool } from "./tools/sauceswap/get_pools_tool";
 
 dotenv.config();
 
 export function createHederaTools(hederaKit: HederaAgentKit): Tool[] {
+  console.log("Creating tools...");
+  
+  // Create SauceSwap tools and log them
+  const sauceSwapRatesTool = new SauceSwapPoolConversionRatesTool(hederaKit);
+  const sauceSwapPoolsTool = new SauceSwapPoolsTool(hederaKit);
+  console.log(`Created SauceSwap tools with names: ${sauceSwapRatesTool.name}, ${sauceSwapPoolsTool.name}`);
 
-  return [
+  const tools = [
     new HederaGetBalanceTool(hederaKit),
     new HederaCreateTopicTool(hederaKit),
     new HederaDeleteTopicTool(hederaKit),
@@ -49,5 +57,11 @@ export function createHederaTools(hederaKit: HederaAgentKit): Tool[] {
     new HederaRejectTokenTool(hederaKit),
     new HederaTransferHbarTool(hederaKit),
     new HederaTransferTokenTool(hederaKit),
-  ]
+    sauceSwapRatesTool,  // Use the already created instance
+    sauceSwapPoolsTool   // Add the new pools tool
+  ];
+  
+  console.log(`Total tools created: ${tools.length}`);
+  
+  return tools;
 }
