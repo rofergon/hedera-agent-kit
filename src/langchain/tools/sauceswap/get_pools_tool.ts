@@ -159,7 +159,14 @@ Get only HBAR pools:
           totalPages,
           totalCount,
           hasNextPage: validPage < totalPages,
-          hasPreviousPage: validPage > 1
+          hasPreviousPage: validPage > 1,
+          currentRange: `${startIdx + 1}-${endIdx}`,
+          remainingItems: totalCount - endIdx,
+          remainingPages: totalPages - validPage,
+          paginationSummary: `Showing pools ${startIdx + 1}-${endIdx} of ${totalCount} total pools (page ${validPage} of ${totalPages})`,
+          navigationGuide: validPage < totalPages ? 
+            `There are ${totalPages - validPage} more pages available. To see more pools, request page ${validPage + 1}.` : 
+            "You are viewing the last page of results."
         },
         filter: filter || null,
         data: poolsPage
